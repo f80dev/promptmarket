@@ -1,0 +1,45 @@
+{
+    "name": "Goto in arena",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "tf-make.scen.json"
+        },
+        {
+            "step": "externalSteps",
+            "path": "tf-addarena.scen.json"
+        },
+        {
+            "step": "scCall",
+            "id": "make",
+            "tx": {
+                "from": "address:user1",
+                "to": "sc:tokemonworld",
+                "function": "goto_arena",
+                "arguments": [
+                    "u32:1",
+                    "u64:1"
+                ],
+                "gasLimit": "20,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "2",
+                    "balance": "99999"
+                }
+            }
+        }
+    ]
+}
