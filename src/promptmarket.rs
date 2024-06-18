@@ -9,18 +9,18 @@ use multiversx_sc::imports::*;
 
 //voir la structure https://github.com/multiversx/mx-sdk-rs/blob/master/contracts/examples/lottery-esdt/src/lottery_info.rs
 
-
-#[derive(TypeAbi, TopEncode, TopDecode)]
+#[derive(TypeAbi, TopEncode, TopDecode,NestedEncode,NestedDecode)]
 pub struct Prompt<M: ManagedTypeApi> {
     pub text:ManagedBuffer<M>,          //contenu du prompt ou address pointant sur un prompt
     pub offer:u64,                      //Montant proposé
-    pub model:u8,                        //Modele demandé
-    pub inference:u16,                    //Inference
-    pub scale:u16,                          //resolution
-    pub owner:usize
+    pub token:TokenIdentifier<M>,
+    pub model:u8,                       //Modele demandé
+    pub inference:u16,                  //Inférence
+    pub scale:u16,                      //résolution
+    pub owner:usize                     //Propriétaire
 }
 
-#[derive(TypeAbi, TopEncode, TopDecode)]
+#[derive(TypeAbi, TopEncode, TopDecode,ManagedVecItem,NestedEncode,NestedDecode)]
 pub struct Render<M: ManagedTypeApi> {
     pub prompt_id:usize,
     pub url:ManagedBuffer<M>,
@@ -46,7 +46,6 @@ pub trait PromptMarket {
     #[storage_mapper("users")]
     fn users(&self) -> UnorderedSetMapper<ManagedAddress>;
 
-
     //voir https://github.com/multiversx/mx-sdk-rs/blob/a9f22d00e3b8dca5c310a87421f75a1da064c05c/contracts/examples/nft-minter/src/nft_module.rs
     // #[view(getNftTokenId)]
     // #[storage_mapper("tokens")]
@@ -54,74 +53,77 @@ pub trait PromptMarket {
     //
     #[view(getPrompts)]
     #[storage_mapper("prompts")]
-    fn prompts(&self) -> VecMapper<Prompt<Self::Api>>;
+    fn prompts(&self) -> UnorderedSetMapper<Prompt<Self::Api>>;
 
     #[view(getRenders)]
     #[storage_mapper("renders")]
-    fn renders(&self) -> VecMapper<Render<Self::Api>>;
-
+    fn renders(&self) -> UnorderedSetMapper<Render<Self::Api>>;
 
 
     #[init]
     fn init(&self) {
-
     }
 
 
     fn add_user(&self,addr:ManagedAddress) -> usize {
         //Ajoute une address de user (airdropper ou claimer) sans doublon et retourne sa position
         let pos=self.users().get_index(&addr);
-        if pos>0 {return pos;}
+        if pos>0 {return pos;} //On retourne la position sans ajouter
         self.users().insert(addr);
         return self.users().len();
     }
 
 
-
     #[endpoint]
-    fn add_prompt(&self, text: ManagedBuffer,offer:u64,model:u8,inference:u16,scale:u16) {
+    #[payable("*")]
+    fn add_prompt(&self, text: ManagedBuffer,model:u8,inference:u16,scale:u16) -> usize {
         //Ajout d'un prompt sur le marché
         //voir https://github.com/multiversx/mx-sdk-rs/blob/a9f22d00e3b8dca5c310a87421f75a1da064c05c/contracts/examples/seed-nft-minter/src/nft_module.rs#L26
-        let issue_cost = self.call_value().egld_value();
+        //let issue_cost = self.call_value().egld_value();
         //voir https://docs.multiversx.com/tokens/nft-tokens#issuance-of-non-fungible-tokens
         //voir https://github.com/multiversx/mx-nft-collection-minter-sc/blob/c198141d2436f41b5b3afcea24c3ebbb23d3f13b/nft-minter/src/brand_creation.rs#L148
 
+        let token_payment: EgldOrEsdtTokenPayment = self.call_value().egld_or_single_esdt();
+        //require!(token_payment.is_esdt(),"Vous ne pouvez pas proposer des egld");
+
         let prompt:Prompt<Self::Api> = Prompt {
             text:text,
-            offer:offer,
+            offer:token_payment.amount.to_u64().unwrap(),
+            token:token_payment.unwrap_esdt().token_identifier,
             model:model,
             inference:inference,
             scale:scale,
             owner:self.add_user(self.blockchain().get_caller())
         };
-
         self.prompts().insert(prompt);
+        return self.prompts().len()
     }
 
-
-
     #[endpoint]
-    #[payable("*")]
-    fn get_render(&self,render_id:uszie) {
+    fn get_render(&self,render_id:usize) {
         //Récupération d'un rendu par l'acheteur
+        require!(render_id<=self.renders().len(),"Ce rendu n'existe pas");
+        let render: Render<Self::Api> = self.renders().get_by_index(render_id);
+        //voir https://docs.multiversx.com/developers/developer-reference/sc-api-functions/#egld_or_single_esdt
 
-        let render:Render<Self::Api>=self.renders().get(render_id);
-        let token_payment = self.call_value().egld_or_single_esdt(); //voir https://docs.multiversx.com/developers/developer-reference/sc-api-functions/#egld_or_single_esdt
-
-        require!(token_payment.amount>=render.price,"Le montant doit être égale au prix demandé");
-
+        let prompt=self.prompts().get_by_index(render.prompt_id);
+        let token=prompt.token;
+        require!(prompt.owner==self.add_user(self.blockchain().get_caller()),"vous n'étes pas propriétaire");
 
         //Paiement https://docs.multiversx.com/developers/developer-reference/sc-api-functions/#direct_esdt
-        direct_esdt(to: &ManagedAddress, token_id: token_payment.identifier, token_nonce: u64, amount: &BigUint)
+        //Paiement du créateur
+        self.send().direct_esdt(
+            &self.users().get_by_index(render.creator),
+            &token, 0,
+            &BigUint::from(render.price)
+        );
 
-        self.tx()
-            .to(caller)
-            .single_esdt(
-                &tokens_mapper.get_token_id(),
-                nonce,
-                &BigUint::from(1u8),
-            )
-            .transfer();
+        //On rembourse le prompteur de la différence de prix
+        self.send().direct_esdt(
+            &self.users().get_by_index(prompt.owner),
+            &token, 0 ,
+            &BigUint::from(prompt.offer-render.price)
+        );
     }
 
 
@@ -130,17 +132,19 @@ pub trait PromptMarket {
         /*
         Ajout d'un rendu avec son prix
         */
+        require!(prompt_id<=self.prompts().len(),"Ce prompt n'existe pas");
+
+        let prompt=self.prompts().get_by_index(prompt_id);
+        require!(prompt.offer>=price,"Proposition au dela du budget du demandeur");
+
         let render:Render<Self::Api> = Render {
             url:url,
             prompt_id:prompt_id,
             creator:self.add_user(self.blockchain().get_caller()),
             price:price
         };
-        let render_id=self.renders().insert(render);
-
-        return render_id;
+        self.renders().insert(render);
+        return self.renders().len()
     }
-
-
 
 }

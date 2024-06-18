@@ -1,0 +1,53 @@
+{
+    "name": "Initialisation",
+    "steps": [
+        {
+            "step": "setState",
+            "accounts": {
+                "address:owner": {"nonce": "1", "balance": "100"},
+                "address:user1": {"nonce": "1", "balance": "1","esdt": {"str:ART-123456": "100"}},
+                "address:user2": {"nonce": "1", "balance": "1","esdt": {"str:ART-123456": "100"}},
+                "address:creator1": {"nonce": "1", "balance": "1","esdt": {"str:ART-123456": "0"}},
+                "address:creator2": {"nonce": "1", "balance": "1","esdt": {"str:ART-123456": "0"}}
+            },
+            "newAddresses": [
+                {
+                    "creatorAddress": "address:owner",
+                    "creatorNonce": "1",
+                    "newAddress": "sc:promptmarket"
+                }
+            ],
+            "currentBlockInfo": {
+                "blockTimestamp": "10"
+            }
+        },
+        {
+            "step": "scDeploy",
+            "id": "deploy",
+            "tx": {
+                "from": "address:owner",
+                "contractCode": "mxsc:../output/promptmarket.mxsc.json",
+                "arguments": [],
+                "gasLimit": "5,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "",
+                "logs": [],
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "2",
+                    "balance": "100"
+                }
+            }
+
+        }
+    ]
+}

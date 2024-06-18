@@ -1,0 +1,30 @@
+{
+    "name": "get render",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "addrender.scen.json"
+        },
+        {
+            "step": "scCall",
+            "id": "get_render",
+            "tx": {
+                "from": "address:user2",
+                "to": "sc:promptmarket",
+                "function": "get_render",
+                "arguments": [
+                    "u32:1"
+                ],
+                "gasLimit": "20,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": [],
+                "status": "4",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        }
+    ]
+}

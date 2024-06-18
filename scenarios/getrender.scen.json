@@ -1,19 +1,19 @@
 {
-    "name": "making NFT",
+    "name": "get render",
     "steps": [
         {
             "step": "externalSteps",
-            "path": "tf-init.scen.json"
+            "path": "addrender.scen.json"
         },
         {
             "step": "scCall",
-            "id": "add_arena",
+            "id": "get_render",
             "tx": {
-                "from": "address:owner",
-                "to": "sc:tokemonworld",
-                "function": "add_arena",
+                "from": "address:user1",
+                "to": "sc:promptmarket",
+                "function": "get_render",
                 "arguments": [
-                    "u32:1","u32:1","str:Paris"
+                    "u32:1"
                 ],
                 "gasLimit": "20,000,000",
                 "gasPrice": "0"
@@ -29,9 +29,15 @@
         {
             "step": "checkState",
             "accounts": {
-                "address:owner": {
-                    "nonce": "4",
-                    "balance": "99999"
+                "address:creator1": {
+                    "nonce": "2",
+                    "balance": "1",
+                    "esdt": {"str:ART-123456": "10"}
+                },
+                "address:user1": {
+                    "nonce": "3",
+                    "balance": "1",
+                    "esdt": {"str:ART-123456": "90"}
                 }
             }
         }

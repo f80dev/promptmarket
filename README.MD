@@ -21,5 +21,5 @@ voir https://docs.multiversx.com/sdk-and-tools/sdk-py/mxpy-cli/#deploying-a-smar
 
 Target devnet:
     mxpy contract build
-    mxpy contract deploy --bytecode ./output/tokemonworld.wasm --proxy=https://devnet-gateway.multiversx.com --recall-nonce --arguments 0 --gas-limit 50000000 --pem=./wallet/sc-owner.pem --send
+    mxpy contract deploy --bytecode ./output/promptmarket.wasm --proxy=https://devnet-gateway.multiversx.com --recall-nonce --arguments 0 --gas-limit 50000000 --pem=./wallet/sc-owner.pem --send
 

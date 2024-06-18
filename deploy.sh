@@ -1,11 +1,13 @@
 echo "Construction"
+CARGO_TARGET_DIR=./target
+mxpy deps install rust --overwrite
 mxpy contract build
 
 PROXY=https://devnet-gateway.multiversx.com
 
 echo "Déploiement du contract"
 mxpy contract deploy --metadata-payable --metadata-not-upgradeable --recall-nonce \
-        --bytecode=./output/tokemonworld.wasm \
+        --bytecode=./output/promptmarket.wasm \
         --pem=./wallet/owner.pem \
         --gas-limit 60000000 \
         --proxy $PROXY --chain D \

@@ -1014,7 +1014,7 @@ checksum = "b59072fa0624b55ae5ae3fa6bfa91515bbeb4ac440214bc4a509e2c8806d6e9f"
 name = "multiversx-sc"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d79d1cea2d23e8f2545749c9b31952305b54c415af88b224b985784d3d6529d"
+checksum = "748a370a86e9a3c51e0609c4a6c0c9a5cceaeb742656ee3284c0620504a3d7a5"
 dependencies = [
  "bitflags 2.5.0",
  "hex-literal",
@@ -1052,7 +1052,7 @@ dependencies = [
 name = "multiversx-sc-derive"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54e6926e181f6306b69aa805b8d24aa33084497e38ac03e37df457456b6757cc"
+checksum = "b6ca88f27a90b0a1b17d5b645cc859e0480f4321c551525873a59a954bfbcb53"
 dependencies = [
  "hex",
  "proc-macro2",
@@ -1065,7 +1065,7 @@ dependencies = [
 name = "multiversx-sc-meta"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07fe6edb214529678c77e82e25d9495b04773d489c441ef49fc19ad0664504f3"
+checksum = "93aba82492783759620d72f21059749177e66438d0c021597c567eae8e888307"
 dependencies = [
  "clap",
  "colored",
@@ -1092,7 +1092,7 @@ dependencies = [
 name = "multiversx-sc-scenario"
 version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3dd07e4626e551c051f3065c0b2b44047d3281c20cdbcef9375aecb5f9fd5307"
+checksum = "d2992739c2ef6bc8e448434b9c3ab848f2ce17264192a9918734cbb3884d0435"
 dependencies = [
  "base64 0.22.1",
  "bech32",
@@ -1378,6 +1378,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ad3d49ab951a01fbaafe34f2ec74122942fe18a3f9814c3268f1bb72042131b"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "promptmarket"
+version = "0.0.0"
+dependencies = [
+ "bitflags 2.5.0",
+ "hex-literal",
+ "multiversx-sc",
+ "multiversx-sc-scenario",
+ "num-bigint",
+]
+
+[[package]]
+name = "promptmarket-meta"
+version = "0.0.0"
+dependencies = [
+ "multiversx-sc-meta",
+ "promptmarket",
 ]
 
 [[package]]
@@ -1917,25 +1936,6 @@ name = "tinyvec_macros"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
-
-[[package]]
-name = "tokemonworld"
-version = "0.0.0"
-dependencies = [
- "bitflags 2.5.0",
- "hex-literal",
- "multiversx-sc",
- "multiversx-sc-scenario",
- "num-bigint",
-]
-
-[[package]]
-name = "tokemonworld-meta"
-version = "0.0.0"
-dependencies = [
- "multiversx-sc-meta",
- "tokemonworld",
-]
 
 [[package]]
 name = "tokio"

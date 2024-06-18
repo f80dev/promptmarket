@@ -1,45 +1,39 @@
 {
-    "name": "Adding NFT",
+    "name": "add render",
     "steps": [
         {
             "step": "externalSteps",
-            "path": "tf-init.scen.json"
-        },
-        {
-            "step": "setState",
-            "currentBlockInfo": {
-                "blockTimestamp": "200,000"
-            }
+            "path": "addprompt.scen.json"
         },
         {
             "step": "scCall",
-            "id": "make",
+            "id": "add_render",
             "tx": {
-                "from": "address:owner",
+                "from": "address:creator1",
                 "to": "sc:promptmarket",
-                "function": "make_nft",
+                "function": "add_render",
                 "arguments": [
-                    "str:NFT1",
-                    "str:https://unsplash.com/fr/photos/un-jouet-orange-pose-sur-un-sol-en-ciment-WC_Qjaryv4Y"
+                    "u32:1",
+                    "str:https://nfluent.io",
+                    "u64:10"
                 ],
                 "gasLimit": "20,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": ["0x01"],
                 "status": "0",
                 "message": "",
                 "gas": "*",
                 "refund": "*"
             }
         },
-
         {
             "step": "checkState",
             "accounts": {
                 "address:owner": {
                     "nonce": "2",
-                    "balance": "99999"
+                    "balance": "100"
                 }
             }
         }

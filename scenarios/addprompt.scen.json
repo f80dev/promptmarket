@@ -1,43 +1,49 @@
 {
-    "name": "Goto in arena",
+    "name": "add prompt",
     "steps": [
         {
             "step": "externalSteps",
-            "path": "tf-make.scen.json"
-        },
-        {
-            "step": "externalSteps",
-            "path": "tf-addarena.scen.json"
+            "path": "init.scen.json"
         },
         {
             "step": "scCall",
-            "id": "make",
+            "id": "add_prompt",
             "tx": {
                 "from": "address:user1",
                 "to": "sc:promptmarket",
-                "function": "goto_arena",
+                "function": "add_prompt",
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ART-123456",
+                        "value": "10"
+                    }
+                ],
                 "arguments": [
-                    "u32:1",
-                    "u64:1"
+                    "str:a green rabbit on the beach",
+                    "u8:1","u16:30","u16:256"
                 ],
                 "gasLimit": "20,000,000",
                 "gasPrice": "0"
             },
             "expect": {
-                "out": [],
+                "out": ["0x01"],
                 "status": "0",
                 "message": "",
                 "gas": "*",
                 "refund": "*"
             }
         },
-
         {
             "step": "checkState",
             "accounts": {
                 "address:owner": {
                     "nonce": "2",
-                    "balance": "99999"
+                    "balance": "100"
+                },
+                "address:user1": {
+                    "nonce": "2",
+                    "balance": "1",
+                    "esdt": {"str:ART-123456": "90"}
                 }
             }
         }
