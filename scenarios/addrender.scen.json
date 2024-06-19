@@ -15,7 +15,7 @@
                 "arguments": [
                     "u32:1",
                     "str:https://nfluent.io",
-                    "u64:10"
+                    "u64:9"
                 ],
                 "gasLimit": "20,000,000",
                 "gasPrice": "0"

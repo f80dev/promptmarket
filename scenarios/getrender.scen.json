@@ -10,6 +10,7 @@
             "id": "get_render",
             "tx": {
                 "from": "address:user1",
+                "value": "1",
                 "to": "sc:promptmarket",
                 "function": "get_render",
                 "arguments": [
@@ -32,12 +33,12 @@
                 "address:creator1": {
                     "nonce": "2",
                     "balance": "1",
-                    "esdt": {"str:ART-123456": "10"}
+                    "esdt": {"str:ART-123456": "9"}
                 },
                 "address:user1": {
                     "nonce": "3",
-                    "balance": "1",
-                    "esdt": {"str:ART-123456": "90"}
+                    "balance": "0",
+                    "esdt": {"str:ART-123456": "91"}
                 }
             }
         }

@@ -1,22 +1,23 @@
 #utiliser https://string-functions.com/string-hex.aspx
 CONTRACT=$(mxpy data parse --file="./output/deploy-devnet.interaction.json" --expression="data['contractAddress']")
-ARENA_LON=10
-ARENA_LAT=10
-ARENA_NAME=0x7061726973
+TEXT=0x7061726973
+INFERENCE=30
+MODEL=1
+SCALE=200
 PROXY=https://devnet-gateway.multiversx.com
 TOKEN=AIRDROP-bc8a67
 TOTAL="4000000000000000000"
 
-echo "Mint de la collection"
+echo "Ajout d'un prompt"
 mxpy --verbose contract call $CONTRACT \
-        --pem ./wallet/owner.pem --recall-nonce \
+        --pem ./wallet/user1.pem --recall-nonce \
         --proxy $PROXY --chain D \
         --gas-limit 500000000 \
         --token-transfers $TOKEN $TOTAL \
-        --function add_arena \
-        --arguments $ARENA_LON $ARENA_LAT $ARENA_NAME \
+        --function add_prompt \
+        --arguments $TEXT $MODEL $INFERENCE $SCALE \
         --send \
-        --outfile="./output/add_arena.json"
+        --outfile="./output/add_prompt.json"
 
-TRANSACTION=$(mxpy data parse --file="./output/add_arena.json" --expression="data['emittedTransactionHash']")
+TRANSACTION=$(mxpy data parse --file="./output/add_prompt.json" --expression="data['emittedTransactionHash']")
 echo "add_arena https://devnet-explorer.multiversx.com/transactions/$TRANSACTION"

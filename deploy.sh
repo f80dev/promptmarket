@@ -1,17 +1,17 @@
 echo "Construction"
-CARGO_TARGET_DIR=./target
-mxpy deps install rust --overwrite
 mxpy contract build
 
 PROXY=https://devnet-gateway.multiversx.com
+ROYALTIES=0
+MAX_PROMPT=5
 
 echo "Déploiement du contract"
 mxpy contract deploy --metadata-payable --metadata-not-upgradeable --recall-nonce \
         --bytecode=./output/promptmarket.wasm \
         --pem=./wallet/owner.pem \
         --gas-limit 60000000 \
+        --argument $ROYALTIES $MAX_PROMPT \
         --proxy $PROXY --chain D \
-        --arguments 500 \
         --send \
         --outfile=./output/deploy-devnet.interaction.json
 

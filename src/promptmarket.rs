@@ -42,7 +42,7 @@ pub trait PromptMarket {
     // //Représente l'historiques des bénéficiaires des airdrop ouverts pour ne pas distribuer deux fois un airdrop
     //voir exemple dans https://github.com/multiversx/mx-sdk-rs/blob/f2845bb197c3fa07e80fdf7681189d59b722a6d0/contracts/examples/rewards-distribution/src/rewards_distribution.rs#L367
 
-    #[view(getUsers)]
+    #[view(users)]
     #[storage_mapper("users")]
     fn users(&self) -> UnorderedSetMapper<ManagedAddress>;
 
@@ -50,19 +50,47 @@ pub trait PromptMarket {
     // #[view(getNftTokenId)]
     // #[storage_mapper("tokens")]
     // fn tokens(&self) -> NonFungibleTokenMapper;
+
     //
-    #[view(getPrompts)]
+    #[view(prompts)]
     #[storage_mapper("prompts")]
     fn prompts(&self) -> UnorderedSetMapper<Prompt<Self::Api>>;
 
-    #[view(getRenders)]
+    #[view(renders)]
     #[storage_mapper("renders")]
     fn renders(&self) -> UnorderedSetMapper<Render<Self::Api>>;
 
 
+    #[view(fee)]
+    #[storage_mapper("fee")]
+    fn fee(&self) -> SingleValueMapper<u64>;
+
+    #[view(maxprompt)]
+    #[storage_mapper("maxprompt")]
+    fn maxprompt(&self) -> SingleValueMapper<u8>;
+
     #[init]
-    fn init(&self) {
+    fn init(&self,fee:u64,maxprompt:u8) {
+        self.fee().set(fee);
+        self.maxprompt().set(maxprompt);
     }
+
+    #[only_owner]
+    #[endpoint]
+    fn update_fee(&self,fee:u64) {
+        self.fee().set(fee);
+    }
+
+    #[only_owner]
+    #[endpoint]
+    fn get_fees(&self) {
+        //Récupère les fees
+        let caller=self.blockchain().get_caller();
+        //voir https://docs.multiversx.com/developers/developer-reference/sc-api-functions/#direct_egld
+        let solde=self.blockchain().get_balance(&self.blockchain().get_sc_address());
+        self.send().direct_egld(&caller,&solde);
+    }
+
 
 
     fn add_user(&self,addr:ManagedAddress) -> usize {
@@ -72,6 +100,7 @@ pub trait PromptMarket {
         self.users().insert(addr);
         return self.users().len();
     }
+
 
 
     #[endpoint]
@@ -86,8 +115,15 @@ pub trait PromptMarket {
         let token_payment: EgldOrEsdtTokenPayment = self.call_value().egld_or_single_esdt();
         //require!(token_payment.is_esdt(),"Vous ne pouvez pas proposer des egld");
 
-        let prompt:Prompt<Self::Api> = Prompt {
-            text:text,
+        //TODO Ajouter le controle du nombre max de prompt
+
+        require!(model > 0u8,"Le modele n'est pas correct");
+        require!(inference > 10,"Un minimum de 10 inférences est requis");
+        require!(scale > 64,"la taille minimum est de 64 pixels");
+        require!(text.len() > 4,"La prompts doit faire au moins 5 caractères");
+
+        let prompt = Prompt {
+            text: text,
             offer:token_payment.amount.to_u64().unwrap(),
             token:token_payment.unwrap_esdt().token_identifier,
             model:model,
@@ -99,9 +135,14 @@ pub trait PromptMarket {
         return self.prompts().len()
     }
 
+
     #[endpoint]
+    #[payable("EGLD")]
     fn get_render(&self,render_id:usize) {
         //Récupération d'un rendu par l'acheteur
+        let payment = self.call_value().egld_value();
+        require!(payment.to_u64().unwrap()>=self.fee().get(),"Paiement inssufisant pour les fees");
+
         require!(render_id<=self.renders().len(),"Ce rendu n'existe pas");
         let render: Render<Self::Api> = self.renders().get_by_index(render_id);
         //voir https://docs.multiversx.com/developers/developer-reference/sc-api-functions/#egld_or_single_esdt
@@ -119,11 +160,13 @@ pub trait PromptMarket {
         );
 
         //On rembourse le prompteur de la différence de prix
-        self.send().direct_esdt(
-            &self.users().get_by_index(prompt.owner),
-            &token, 0 ,
-            &BigUint::from(prompt.offer-render.price)
-        );
+        if prompt.offer-render.price>0 {
+            self.send().direct_esdt(
+                &self.users().get_by_index(prompt.owner),
+                &token, 0 ,
+                &BigUint::from(prompt.offer-render.price)
+            );
+        }
     }
 
 

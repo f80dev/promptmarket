@@ -27,7 +27,7 @@
             "tx": {
                 "from": "address:owner",
                 "contractCode": "mxsc:../output/promptmarket.mxsc.json",
-                "arguments": [],
+                "arguments": ["u64:1","u8:5"],
                 "gasLimit": "5,000,000",
                 "gasPrice": "0"
             },
