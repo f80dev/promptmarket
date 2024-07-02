@@ -14,6 +14,10 @@ fn add_prompt() {
     world().run("scenarios/addprompt.scen.json");
 }
 #[test]
+fn add_2_prompts() {
+    world().run("scenarios/add2prompts.scen.json");
+}
+#[test]
 fn add_render() {
     world().run("scenarios/addrender.scen.json");
 }

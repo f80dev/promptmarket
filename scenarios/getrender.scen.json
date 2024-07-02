@@ -38,7 +38,7 @@
                 "address:user1": {
                     "nonce": "3",
                     "balance": "0",
-                    "esdt": {"str:ART-123456": "91"}
+                    "esdt": {"str:ART-123456": "90"}
                 }
             }
         }

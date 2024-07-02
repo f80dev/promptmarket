@@ -6,7 +6,7 @@ MODEL=1
 SCALE=200
 PROXY=https://devnet-gateway.multiversx.com
 TOKEN=AIRDROP-bc8a67
-TOTAL="4000000000000000000"
+TOTAL="10000000000000000000"
 
 echo "Ajout d'un prompt"
 mxpy --verbose contract call $CONTRACT \

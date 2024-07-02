@@ -1,0 +1,79 @@
+{
+    "name": "add prompt",
+    "steps": [
+        {
+            "step": "externalSteps",
+            "path": "init.scen.json"
+        },
+        {
+            "step": "scCall",
+            "id": "add_prompt",
+            "tx": {
+                "from": "address:user1",
+                "to": "sc:promptmarket",
+                "function": "add_prompt",
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ART-123456",
+                        "value": "10"
+                    }
+                ],
+                "arguments": [
+                    "str:a green rabbit on the beach",
+                    "u8:1","u16:30","u16:256"
+                ],
+                "gasLimit": "20,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["0x01"],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "scCall",
+            "id": "add_prompt",
+            "tx": {
+                "from": "address:user1",
+                "to": "sc:promptmarket",
+                "function": "add_prompt",
+                "esdtValue": [
+                    {
+                        "tokenIdentifier": "str:ART-123456",
+                        "value": "10"
+                    }
+                ],
+                "arguments": [
+                    "str:a blue rabbit on the beach",
+                    "u8:1","u16:30","u16:256"
+                ],
+                "gasLimit": "20,000,000",
+                "gasPrice": "0"
+            },
+            "expect": {
+                "out": ["0x02"],
+                "status": "0",
+                "message": "",
+                "gas": "*",
+                "refund": "*"
+            }
+        },
+        {
+            "step": "checkState",
+            "accounts": {
+                "address:owner": {
+                    "nonce": "2",
+                    "balance": "100"
+                },
+                "address:user1": {
+                    "nonce": "3",
+                    "balance": "1",
+                    "esdt": {"str:ART-123456": "80"}
+                }
+            }
+        }
+    ]
+}
