@@ -3,14 +3,13 @@ mxpy contract build
 
 PROXY=https://devnet-gateway.multiversx.com
 ROYALTIES=0
-MAX_PROMPT=5
 
 echo "Déploiement du contract"
 mxpy contract deploy --metadata-payable --metadata-not-upgradeable --recall-nonce \
         --bytecode=./output/promptmarket.wasm \
         --pem=./wallet/owner.pem \
         --gas-limit 60000000 \
-        --argument $ROYALTIES $MAX_PROMPT \
+        --argument $ROYALTIES  \
         --proxy $PROXY --chain D \
         --send \
         --outfile=./output/deploy-devnet.interaction.json
