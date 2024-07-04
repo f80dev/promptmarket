@@ -251,6 +251,9 @@ pub trait PromptMarket {
             &server.price
         );
 
+        //Fermeture du prompt
+        self.closed_prompt().insert(prompt_id);
+
         return self.renders().len()
     }
 
