@@ -28,6 +28,15 @@ pub struct Server<M: ManagedTypeApi> {
     pub owner:usize,                    //Propriétaire
 }
 
+#[derive(TypeAbi,TopEncode, TopDecode,NestedEncode,NestedDecode)]
+pub struct Eval {
+    pub server:usize,
+    pub user:usize,
+    pub note:u8
+}
+
+
+
 #[derive(TypeAbi, TopEncode, TopDecode,ManagedVecItem,NestedEncode,NestedDecode)]
 pub struct Render<M: ManagedTypeApi> {
     pub prompt_id:usize,
@@ -81,6 +90,14 @@ pub trait PromptMarket {
     #[storage_mapper("closed_prompt")]
     fn closed_prompt(&self) -> UnorderedSetMapper<usize>;
 
+    #[view(closed_servers)]
+    #[storage_mapper("closed_servers")]
+    fn closed_servers(&self) -> UnorderedSetMapper<usize>;
+
+
+    #[view(evals)]
+    #[storage_mapper("evals")]
+    fn evals(&self) -> UnorderedSetMapper<Eval>;
 
 
     #[view(fee)]
@@ -116,7 +133,6 @@ pub trait PromptMarket {
         //voir https://github.com/multiversx/mx-nft-collection-minter-sc/blob/c198141d2436f41b5b3afcea24c3ebbb23d3f13b/nft-minter/src/brand_creation.rs#L148
 
         let server=self.servers().get_by_index(server_id);
-
 
         let token_payment: EgldOrEsdtTokenPayment = self.call_value().egld_or_single_esdt();
         require!(token_payment.token_identifier==server.token,"Ne correspond pas à la monnaie du server");
@@ -221,6 +237,28 @@ pub trait PromptMarket {
 
 
     #[endpoint]
+    fn cancel_server(&self, server_id:usize) -> bool {
+        require!(server_id<=self.servers().len(),"Server inexistant");
+        require!(self.closed_servers().get_index(&server_id)==0,"Server déjà clos");
+        return self.closed_servers().insert(server_id)
+    }
+
+    #[endpoint]
+    fn eval_server(&self, server_id:usize,note:u8)  -> bool {
+        require!(server_id<=self.servers().len(),"Server inexistant");
+        require!(note>0 && note<=20,"Server déjà clos");
+        let eval=Eval {
+            server: server_id,
+            user: self.add_address(&self.blockchain().get_caller()),
+            note: note
+        };
+        return self.evals().insert(eval)
+    }
+
+
+
+
+    #[endpoint]
     fn add_render(&self, prompt_id:usize,url:ManagedBuffer) -> usize {
         /*
         Ajout d'un rendu avec son prix
@@ -256,6 +294,8 @@ pub trait PromptMarket {
 
         return self.renders().len()
     }
+
+
 
 
     #[only_owner]
