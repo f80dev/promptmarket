@@ -31,7 +31,6 @@ pub struct Server<M: ManagedTypeApi> {
 #[derive(TypeAbi,TopEncode, TopDecode,NestedEncode,NestedDecode)]
 pub struct Eval {
     pub render:usize,           //Rendu recevant la note
-    pub user:usize,             //Auteur de la note
     pub note:u8
 }
 
@@ -42,8 +41,8 @@ pub struct Render<M: ManagedTypeApi> {
     pub prompt_id:usize,
     pub url:ManagedBuffer<M>,
     pub creator:usize,
-    pub start_delay:u8,                 //Delai en minutes pour démarrer le rendu
-    pub render_duration:u8              //Durée en minutes pour le rendu
+    pub start_delay:u16,                 //Delai en secondes pour démarrer le rendu
+    pub render_duration:u16              //Durée en secondes pour le rendu
 }
 
 
@@ -274,11 +273,10 @@ pub trait PromptMarket {
         require!(note>0 && note<=20,"note between 1 and 20");
         let user=self.add_address(&self.blockchain().get_caller());
         let prompt=self.prompts().get_by_index(self.renders().get_by_index(render_id).prompt_id);
-        require!(prompt.owner==user,"Vous ne pouvez pas évaluer ce rendu");
+        require!(prompt.owner==user,"seul le propriétaire du prompt peut évaluer le rendu");
 
         let eval=Eval {
             render: render_id,
-            user: user,
             note: note
         };
         return self.evals().insert(eval)
@@ -288,7 +286,7 @@ pub trait PromptMarket {
 
 
     #[endpoint]
-    fn add_render(&self, prompt_id:usize,url:ManagedBuffer,render_duration:u8,start_dealy:u8) -> usize {
+    fn add_render(&self, prompt_id:usize,url:ManagedBuffer,render_duration:u16,start_delay:u16) -> usize {
         /*
         Ajout d'un rendu avec son prix
         */
@@ -308,7 +306,7 @@ pub trait PromptMarket {
             prompt_id:prompt_id,
             creator:creator,
             render_duration:render_duration,
-            start_delay:start_dealy
+            start_delay:start_delay
         };
         self.renders().insert(render);
 
