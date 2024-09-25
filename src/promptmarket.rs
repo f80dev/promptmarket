@@ -20,6 +20,7 @@ pub struct Prompt<M: ManagedTypeApi> {
 #[derive(TypeAbi, TopEncode, TopDecode,NestedEncode,NestedDecode)]
 pub struct Server<M: ManagedTypeApi> {
     pub id:usize,                    //
+    pub type_server:u8,
     pub title:ManagedBuffer<M>,             //Promotion du moteur
     pub domain:ManagedBuffer<M>,             //Domain du serveur
     pub price:BigUint<M>,               //Montant proposé
@@ -187,7 +188,7 @@ pub trait PromptMarket {
 
 
     #[endpoint]
-    fn add_server(&self,title:ManagedBuffer,domain:ManagedBuffer,params:ManagedBuffer,price:BigUint,token: TokenIdentifier) -> usize {
+    fn add_server(&self,type_server:u8,title:ManagedBuffer,domain:ManagedBuffer,params:ManagedBuffer,price:BigUint,token: TokenIdentifier) -> usize {
         // require!(model > 0u16,"Le modele n'est pas correct");
         // require!(inference > 10,"Un minimum de 10 inférences est requis");
         // require!(scale > 64,"la taille minimum est de 64 pixels");
@@ -195,6 +196,7 @@ pub trait PromptMarket {
 
         let server = Server {
             id:self.servers().len()+1,
+            type_server:type_server,
             title:title,
             domain:domain,
             price: price,
@@ -248,21 +250,23 @@ pub trait PromptMarket {
 
 
     #[endpoint]
-    fn cancel_server(&self, server_id:usize) -> bool {
+    fn cancel_server(&self, server_id:usize,autoclose_prompt:bool) -> bool {
         require!(server_id<=self.servers().len(),"Server inexistant");
-        require!(self.closed_servers().get_index(&server_id)==0,"Server déjà clos");
-        let owner=self.add_address(&self.blockchain().get_caller());
+        require!(!self.closed_servers().contains(&server_id),"Server déjà clos");
+        let caller=self.add_address(&self.blockchain().get_caller());
         let server=self.servers().get_by_index(server_id);
-        require!(server.owner==owner,"Vous n'êtes pas propriétaire de ce server de rendu");
+        require!(server.owner==caller,"Vous n'êtes pas propriétaire de ce server de rendu");
 
-        for (i,p) in self.prompts().iter().enumerate() {
-            if p.server==server_id {
-                if !self.closed_prompt().contains(&i) {
-                    self.close_prompt(i,p.owner);
+        if autoclose_prompt {
+            for (i,p) in self.prompts().iter().enumerate() {
+                if p.server==server_id {
+                    if !self.closed_prompt().contains(&i) {
+                        self.close_prompt(i,p.owner);
+                    }
                 }
-
             }
         }
+
         return self.closed_servers().insert(server_id)
     }
 
